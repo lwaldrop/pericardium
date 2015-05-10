@@ -215,6 +215,7 @@ FILE *out4;
 FILE *out5;
 FILE *out6;
 FILE *out11;
+FILE *out12;
   
 
 //----------------------------------------------------------------------------------------------------------------//
@@ -233,7 +234,8 @@ int main()
   out3=fopen("velu_valveless_test","w");  //velocity in u direction
   out4=fopen("velv_valveless_test","w"); //velocity in v direction
   out11=fopen("pmarkers_valveless_test","w"); //pericardial markers_valveless_test
-  
+  out12=fopen("press_valveless_test","w"); //pressure field
+	
   //Declare variables  
   plan = 1;
   check_fluid=0;
@@ -699,8 +701,8 @@ II[i]=0;
       {  
   
 	//print to output file every dptime.
-	//recordp(bdptime, prest, ttime);  
-        recordpart(dptime, marker1, marker2, ttime);  
+	recordp(bdptime, prest, ttime);  
+    recordpart(dptime, marker1, marker2, ttime);  
 	recordp2(dptime, d13, d23, d14, d24, ttime); 
 	recordo(dptime, d1, d2, d12, d22, marker1, marker2, ttime);  
 	recordu(u, bdptime, ttime);  
@@ -843,6 +845,14 @@ II[i]=0;
 	 	//f2s2[i] = 0;
 	 }
 
+	 //remove target springs from section of pericardium. Currently set to one side on the top and bottom
+//	 for(i=1; i<Np;i++){
+//		f1t3[i]=0;
+//		f2t3[i]=0;
+//		f1t4[i]=0;
+//		f2t4[i]=0;
+//	 }
+	 
 	//framp(f1, f2, u, v, ks, ttime, ramptime, ramp, rampmax, M, N);
 	//Spread all of the different forces to the fluid grid.
 	fspread(f1, f2, d1, d2, f1r, f2r, ds, dx, WI);  
@@ -1307,13 +1317,13 @@ double recordp(double dptime, double *prest, double ttime)
   if((ttime>bptime))  
     {  
 
-      for(i=0;i<M/2;i++){
-	for(j=0;j<(N/2);j++){
-	  fprintf(out4, "%g\t", prest[row(2*i, 2*j)]);
+      for(i=0;i<M;i++){
+	for(j=0;j<(N);j++){
+	  fprintf(out12, "%g\t", prest[row(i, j)]);
 	}
-	fprintf(out4, "\n");
+	fprintf(out12, "\n");
       }
-      fflush(out4);  
+      fflush(out12);  
     }    
   return bptime;
 } 
