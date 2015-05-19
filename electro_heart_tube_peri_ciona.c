@@ -18,7 +18,7 @@
 
 
 
-double *u, *v, *w1,  *w2, *f1, *f2, *a, *b, *c, *d;
+double *u, *v, *w1,  *w2, *f1, *f2, *a, *b, *c, *d, *press;
 double *theta_1, *theta_2;
 double bptime, bdptime, ap;  
 double *unew, *vnew, *psi, *prest, *btu, *btv, *ut, *vt, *dt1p, *dt2p, *dt1p2, *dt2p2, damp;  
@@ -31,7 +31,7 @@ double *markeru, *markerv, *du, *dv, *du2, *dv2, *du3, *dv3, *du4, *dv4, *bu, *b
 double *vorticity, *mesh, *dmesh, *force1r, *force2r;
 double inertialf, viscousf, tlift, ttranslation;  
 int counter, plan, itop;  
-double tr1, da, tm, dm, pos, ave_vel;
+double tr1, da, tm, dm, pos, ave_vel, pressp;
 double atau1, atau2;
 double thetan1, thetan2;
 double FHpulse, tscale, *kelect;
@@ -50,8 +50,8 @@ void free_2d_int(int **ii);
 double **alloc_2d_double(int n1, int n2);  
 void free_2d_double(double **dd);  
   
-fftw_complex *mymatrix, *uft, *vft, *uftout, *vftout, *w1ft, *w2ft, *w1ftout, *w2ftout, *w1ftin, *w2ftin, *pft; 
-fftw_plan plu1, plv1, plw1, plw2, pl, pl1, pl2, pl3, pl4;  
+fftw_complex *mymatrix, *uft, *vft, *uftout, *vftout, *w1ft, *w2ft, *w1ftout, *w2ftout, *w1ftin, *w2ftin, *pft, *pftout; 
+fftw_plan plu1, plv1, plw1, plw2, pl, pl1, pl2, pl3, pl4, pl5;  
   
 int n; 
 int markersize1, markersize2, markersize3; 
@@ -192,7 +192,8 @@ double recordv(double *v, double dptime, double ttime);
 double recordo(double dptime, double d1[], double d2[], double d12[], double d22[], double marker1[], double marker2[], double ttime); 
 double recordp2(double dptime, double d13[], double d23[], double d14[], double d24[], double ttime); 
 double recordavevel(double *u, double *v, double dptime, double ttime);  
-double recordp(double dptime, double *prest, double ttime);
+double recordavepress(double *press, double dptime, double ttime); 
+double recordp(double dptime, double *press, double ttime);
 void record1real(double *array, int L);  
 double record2(double *array, int M, int N);  
 void record1(double *d2, double *d1, double L, double ttime);  
@@ -216,7 +217,7 @@ FILE *out5;
 FILE *out6;
 FILE *out11;
 FILE *out12;
-  
+FILE *out20; 
 
 //----------------------------------------------------------------------------------------------------------------//
 // beginning of the main file, this is where all changable parameters will be! //
@@ -228,6 +229,7 @@ int main()
 //Opens files to write to
   out5=fopen("particles_valveless_test","w"); //x,y coordinates of particles
   out6 = fopen("ave_vel_test","w"); //average velocity along tube vs. time
+  out20=fopen("press_line_test","w");
   out=fopen("markers_valveless_test","w");  //x,y coordinates of boundaries
   out1=fopen("vorticity_valveless_test","w");  //vorticity
   out2=fopen("forces_valveless_test", "w");  //forces on walls (ignore for now)
@@ -400,6 +402,7 @@ int main()
   n2 = M;  
   n1 = N;  
   prest = (double *) malloc(n1*n2*sizeof(double));  
+  press = (double *) malloc(n1*n2*sizeof(double));  
   unew = (double *) malloc(n1*n2*sizeof(double));  
   vnew = (double *) malloc(n1*n2*sizeof(double));  
   psi = (double *) malloc((n1/2)*(n2/2)*sizeof(double)); 
@@ -526,13 +529,14 @@ int main()
 
   mymatrix = fftw_malloc(3*5*sizeof(fftw_complex));  
   pft = fftw_malloc(n2*n1*sizeof(fftw_complex));
+  pftout = fftw_malloc(n2*n1*sizeof(fftw_complex)); 
 
   //makes plans
   pl1 = fftw_plan_dft_2d(M, N, w1ft, w1ftout, FFTW_FORWARD, FFTW_MEASURE);
   pl2 = fftw_plan_dft_2d(M, N, w2ft, w2ftout, FFTW_FORWARD, FFTW_MEASURE);
   pl3 = fftw_plan_dft_2d(M, N, uft, uftout, FFTW_BACKWARD, FFTW_MEASURE);
   pl4 = fftw_plan_dft_2d(M, N, vft, vftout, FFTW_BACKWARD, FFTW_MEASURE);
-  
+  pl5 = fftw_plan_dft_2d(M, N, pft, pftout, FFTW_BACKWARD, FFTW_MEASURE);
   //--------------------------------------------------------------  
   //Set initial conditions  
   zero2(u,M,N);            //for fluid velocity  
@@ -701,7 +705,7 @@ II[i]=0;
       {  
   
 	//print to output file every dptime.
-	recordp(bdptime, prest, ttime);  
+	recordp(bdptime, press, ttime);  
     recordpart(dptime, marker1, marker2, ttime);  
 	recordp2(dptime, d13, d23, d14, d24, ttime); 
 	recordo(dptime, d1, d2, d12, d22, marker1, marker2, ttime);  
@@ -709,6 +713,7 @@ II[i]=0;
 	recordv(v, bdptime, ttime); 
 	record(u, v, vorticity, bdptime, ttime);   
         recordavevel(u, v, dptime, ttime);  
+		recordavepress(press, dptime, ttime);  
 	recordf(dptime, v, f1r, f2r, f1s, f2s, f1t, f2t, force1r, force2r, f1, f2, ttime); 
        
 
@@ -1258,6 +1263,18 @@ double recordavevel(double *u, double *v, double dptime, double ttime){
     ave_vel=0;
 }}
 
+double recordavepress(double *press, double dptime, double ttime){  
+  if(ttime>ptime){
+    itop = 150+floor((diameter/length)*600);
+    for(i=150; i<itop; i++){
+    pressp=press[row(i,450)];
+    fprintf(out20,"\n");  
+    fprintf(out20, "%g\t%g", pressp, ttime);
+    }
+    //ave_vel=ave_vel/(itop-150);  
+    fflush(out20);
+    ave_vel=0;
+}}
 
 double recordf(double dptime, double *v, double f1r[], double f2r[], double f1s[], double f2s[], double f1t[], double f2t[], double force1r[], double force2r[], double f1[], double f2[], double ttime){  
   //record lift and translation  
@@ -1312,14 +1329,14 @@ double recordf(double dptime, double *v, double f1r[], double f2r[], double f1s[
   return ptime;  
 } 
 
-double recordp(double dptime, double *prest, double ttime)
+double recordp(double dptime, double *press, double ttime)
 {
   if((ttime>bptime))  
     {  
 
       for(i=0;i<M;i++){
 	for(j=0;j<(N);j++){
-	  fprintf(out12, "%g\t", prest[row(i, j)]);
+	  fprintf(out12, "%g\t", press[row(i, j)]);
 	}
 	fprintf(out12, "\n");
       }
@@ -1498,7 +1515,18 @@ void flu(double *u, double *v, double *f1, double *f2, double *a, double *b, dou
       vft[i*N+j][1] = (w2ftout[i*N+j][1]-(b[row(i,j)]*w1ftout[i*N+j][1]+c[row(i,j)]*w2ftout[i*N+j][1]))*d[row(i,j)];  
     }  
   
-  
+ //-----------New stuff----------------
+  for(i=0;i<M;i++){
+    for(j=0;j<N;j++){
+      if(((i==0) && (j==0))||((i==0) && (j==N/2))||((i==M/2) && (j==0))||((i==M/2) && (j==N/2))){  
+	pft[i*N+j][0]=0;
+        pft[i*N+j][1]=0;  
+      }  
+      else{ 
+      pft[i*N+j][0] = ((p*dx/dt)*(sin(2*pi*i/M)*w1ft[i*N+j][1] + sin(2*pi*j/N)*w2ft[i*j+N][1]))/(sin(2*pi*i/M)*sin(2*pi*i/M) + sin(2*pi*j/N)*sin(2*pi*j/N));
+      pft[i*N+j][1] = -((p*dx/dt)*(sin(2*pi*i/M)*w1ft[i*N+j][0] + sin(2*pi*j/N)*w2ft[i*j+N][0]))/(sin(2*pi*i/M)*sin(2*pi*i/M) + sin(2*pi*j/N)*sin(2*pi*j/N));
+    }}}
+//------------New stuff----------------- 
   //fftwnd_destroy_plan(pl); 
   //if(fftcheck==1){ 
   //  pl2 = fftw2d_create_plan(M,N,FFTW_BACKWARD, FFTW_MEASURE|FFTW_IN_PLACE);
@@ -1507,12 +1535,14 @@ void flu(double *u, double *v, double *f1, double *f2, double *a, double *b, dou
   //take backward transforms  
   fftw_execute(pl3);  
   fftw_execute(pl4); 
+    fftw_execute(pl5);
   //fftwnd_destroy_plan(pl);  
   
   for(i=0;i<M;i++)  
     for(j=0;j<N;j++){  
       u[row(i,j)] = scale*uftout[i*N+j][0];  
       v[row(i,j)] = scale*vftout[i*N+j][0];  
+	  press[row(i,j)] = scale*pftout[i*N+j][0];
 	}
    
 
