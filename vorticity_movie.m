@@ -53,7 +53,7 @@ axes1 = axes('Parent',hFig,'YTickLabel',{},'YTick',zeros(1,0),...
 	%k=1;
 	pcolor(x, y, v((k-1)*M+1:(k)*M, 1:N)),shading flat
 	colormap(bone)
-        caxis([-(cmaxx/16) (cmaxx/16)]); %Use this to control how saturated the vorticity plot is.
+    caxis([-(cmaxx/16) (cmaxx/16)]); %Use this to control how saturated the vorticity plot is.
 	shading interp;
 	box(axes1,'on');
 	%hold(axes1,'all');
@@ -64,8 +64,8 @@ axes1 = axes('Parent',hFig,'YTickLabel',{},'YTick',zeros(1,0),...
 	plot(d((k-1)*WI+1:(k)*WI,2), d((k-1)*WI+1:(k)*WI,1), '-k', 'LineWidth', 2.0);
 	plot(d(((k-1)*WI)+1:k*WI,4), d(((k-1)*WI)+1:k*WI,3), '-k', 'LineWidth', 2.0);
 	plot(part(((k-1)*L)+1:k*L,2), part(((k-1)*L)+1:k*L,1), '.m', 'MarkerSize', 8);
-	plot(p(:,2), p(:,1), '.b', 'LineWidth', 1)
-	plot(p(:,4), p(:,3), '.b', 'LineWidth', 1)
+	plot(p(34:605,2), p(34:605,1), '.b', 'LineWidth', 1)
+	plot(p(34:605,4), p(34:605,3), '.b', 'LineWidth', 1)
 	hold off
 	axis equal;
 	%axis([0 .0005 .0001 .00035]);

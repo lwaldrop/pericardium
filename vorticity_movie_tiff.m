@@ -33,7 +33,7 @@ for i = 1:M,
 end
 
 %This determines the maximum value of the vorticity for scaling the plot
-cmax = max(v)
+cmax = max(v);
 cmaxx = max(cmax)
 
 %Create the name of the vorticity file here. Must always make this new or
@@ -53,12 +53,12 @@ axes1 = axes('Parent',hFig,'YTickLabel',{},'YTick',zeros(1,0),...
     'FontName','Arial');
 
 	%k=1;
-	pcolor(x, y, v((k-1)*M+1:(k)*M, 1:N)), shading interp
+	pcolor(x, y, v((k-1)*M+1:(k)*M, 1:N)), shading flat
     colormap(bone)
 	caxis([-(cmaxx/16) (cmaxx/16)]); %Use this to control how saturated the vorticity plot is.
 	box(axes1,'on');
 	hold(axes1,'all');
-	hold on
+	%hold on
 	%plot the wings
 	%figure(1)
 
@@ -67,8 +67,8 @@ axes1 = axes('Parent',hFig,'YTickLabel',{},'YTick',zeros(1,0),...
 	plot(part(((k-1)*L)+1:k*L,2), part(((k-1)*L)+1:k*L,1), '.w', 'MarkerSize', 6);
 	%plot(p(:,2), p(:,1), '-k', 'LineWidth', 1)
 	%plot(p(:,4), p(:,3), '-k', 'LineWidth', 1)
-	plot(p(1:605,2), p(1:605,1), 'LineWidth', 2,'Color',[0.24705882370472 0.24705882370472 0.24705882370472])
-	plot(p(1:605,4), p(1:605,3), 'LineWidth', 2, 'Color',[0.24705882370472 0.24705882370472 0.24705882370472])
+	plot(p(34:605,2), p(34:605,1), 'LineWidth', 2,'Color',[0.24705882370472 0.24705882370472 0.24705882370472])
+	plot(p(34:605,4), p(34:605,3), 'LineWidth', 2, 'Color',[0.24705882370472 0.24705882370472 0.24705882370472])
 	
     hold off
 	axis equal;
@@ -85,7 +85,7 @@ axes1 = axes('Parent',hFig,'YTickLabel',{},'YTick',zeros(1,0),...
     imwrite(I.cdata,['peri_time',num2str(k),'.tif'],'TIFF','Compression','none')
     imwrite(I.cdata,['peri_time',num2str(k),'.png'],'XResolution', 500,'YResolution',500)
     
-   close all
+   %close all
    
 %end
 
