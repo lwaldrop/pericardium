@@ -18,7 +18,7 @@ WI = Nact+Nside+Nact+Nside;
 L = 360;
 
 %load the vorticity, marker, and forces here
-v = load('vorticity_valveless_test');
+v = load('press_valveless_test');
 d = load('markers_valveless_test');
 part = load('particles_valveless_test');
 p = load('pmarkers_valveless_test');
@@ -51,9 +51,10 @@ axes1 = axes('Parent',hFig,'YTickLabel',{},'YTick',zeros(1,0),...
     'FontName','Arial');
 
 	%k=1;
-	%pcolor(x, y, v((k-1)*M+1:(k)*M, 1:N));
-	%caxis([-(cmaxx/16) (cmaxx/16)]); %Use this to control how saturated the vorticity plot is.
-	%shading interp;
+	pcolor(x, y, v((k-1)*M+1:(k)*M, 1:N)),shading flat
+	colormap(bone)
+        caxis([-(cmaxx/16) (cmaxx/16)]); %Use this to control how saturated the vorticity plot is.
+	shading interp;
 	box(axes1,'on');
 	%hold(axes1,'all');
 	hold on

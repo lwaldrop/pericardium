@@ -44,7 +44,7 @@ cmaxx = max(cmax)
 %k going from 1 to 20 controls the number of frames in the movie.
 %for k=1:150, %150
 k =1;
-hFig=figure('Visible','On');
+hFig=figure('Visible','Off');
 axes1 = axes('Parent',hFig,'YTickLabel',{},'YTick',zeros(1,0),...
     'XTickLabel',{},...
     'XTick',zeros(1,0),...
@@ -85,7 +85,7 @@ axes1 = axes('Parent',hFig,'YTickLabel',{},'YTick',zeros(1,0),...
     imwrite(I.cdata,['peri_time',num2str(k),'.tif'],'TIFF','Compression','none')
     imwrite(I.cdata,['peri_time',num2str(k),'.png'],'XResolution', 500,'YResolution',500)
     
-   %close all
+   close all
    
 %end
 
