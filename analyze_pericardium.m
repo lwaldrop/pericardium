@@ -84,6 +84,8 @@ dlmwrite('peakVel_data.csv', peakyVel, '-append') ;
 clear bs be i pks local loc pk
 
 be =0;
+figure(3)
+hold on
 
 %Calculations for Pressure.
 for i = 1:n
@@ -108,7 +110,7 @@ hold off
 
 grand_meanPress = mean(meanyPress)
 
-figure(2)
+figure(4)
 
 plot(peakxPress,peakyPress)
 hold on
