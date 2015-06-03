@@ -1,7 +1,7 @@
 % Analyze data from electro_heart_tube_peri_ciona.c
 
 clear all
-%close all
+close all
 
 
 % loads data
@@ -70,9 +70,6 @@ hold off
 
 tiny_meanVel=mean(pks)
 
-%State what was found:
-
-
 
 % Saves peak data so it can be plotted in R.
 fid = fopen('peak_Veldata.csv', 'w') ;
@@ -83,9 +80,12 @@ dlmwrite('peakVel_data.csv', peakyVel, '-append') ;
 
 clear bs be i pks local loc pk
 
-be =0;
+
 figure(3)
 hold on
+
+
+be =0;
 
 %Calculations for Pressure.
 for i = 1:n
@@ -95,9 +95,9 @@ for i = 1:n
     xPress(i,:) = pressLine(bs:be,2);            % Selects the time for this step
     yPress(i,:) = pressLine(bs:be,1);            % Selects all velocities for step.
     
-    [pk,loc] = max(abs(yPress(i,:)));    % Finds index of peak speed 'loc'
-    peakyPress(i,1) = yPress(i,loc);          % Uses loc to find speed value.
-    peakxPress(i,1) = max(xPress(i,:));            % Finds time for current step.
+    %[pk,loc] = max(abs(yPress(i,:)));    % Finds index of peak speed 'loc'
+    %peakyPress(i,1) = yPress(i,loc);          % Uses loc to find speed value.
+    meanxPress(i,1) = max(xPress(i,:));            % Finds time for current step.
     
     meanyPress(i,1) = mean(yPress(i,:));
     
@@ -112,17 +112,20 @@ grand_meanPress = mean(meanyPress)
 
 figure(4)
 
-plot(peakxPress,peakyPress)
+plot(meanxPress,meanyPress)
 hold on
-plot(peakxPress,meanyPress,'r-')
+% plot(peakxPress,meanyPress,'r-')
+% 
+[pksPressmax,localmax] = findpeaks(meanyPress,'minpeakdistance',mindist);
+[pksPressmin,localmin] = findpeaks(-meanyPress,'minpeakdistance',mindist);
 
-[pksPress,local] = findpeaks(peakyPress,'minpeakdistance',mindist);
- 
-plot(peakxPress(local),peakyPress(local),'r*')
+plot(meanxPress(localmax),meanyPress(localmax),'r*')
+plot(meanxPress(localmin),meanyPress(localmin),'m*')
 
 hold off
 
-tiny_meanPress=mean(pksPress)
+tinymax_meanPress=mean(pksPressmax)
+tinymin_meanPress=-mean(pksPressmin)
 
 %State what was found:
 
